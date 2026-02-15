@@ -1,0 +1,53 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  KUBERNETES_NAMESPACE: default
+
+# Build stage 
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - echo "Building Docker image..."
+    - docker build -t nanajanashia/k8s-demo-app:v1.0 .
+  only:
+    - main
+    - develop
+
+# Test stage (optional - run tests)
+test:
+  stage: test
+  image: node:16
+  script:
+    - echo "Running tests..."
+  
+  only:
+    - main
+    - develop
+
+# Deploy to Kubernetes
+deploy:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  script:
+    - echo "Deploying to Kubernetes..."
+    # Apply configurations
+    - kubectl apply -f k8s/mongo-secret.yaml
+    - kubectl apply -f k8s/mongo-config.yaml
+    - kubectl apply -f k8s/mongo.yaml
+    - kubectl apply -f k8s/webapp.yaml
+    - kubectl apply -f k8s/ingress.yaml
+    # Verify deployment
+    - kubectl rollout status deployment/webapp-deployement
+    - kubectl rollout status deployment/mongo-deployement
+    - kubectl get pods
+    - kubectl get ingress
+  only:
+    - main
+  when: on_success  
