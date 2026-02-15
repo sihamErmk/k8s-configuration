@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-deployement
+  labels:
+    app: webapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+        - name: webapp-container 
+          image: nanajanashia/k8s-demo-app:v1.0 #a simple nodejs app
+          ports:
+          - containerPort: 3000
+          env:
+            - name: MONGO_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: monGo-config
+                  key: mongo-url
+
+            - name: MONGO_USERNAME
+              valueFrom: 
+                secretKeyRef:
+                  name: mongo-secret
+                  key: momgo-username
+
+            - name: MONGO_PASSWORD
+              valueFrom: 
+                secretKeyRef:
+                  name: mongo-secret
+                  key: mongo-password
+
+
+#service yaml config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-service
+spec:
+  type: NodePort
+  selector:
+    app: webapp 
+    #The Service targets TCP port 80 on any Pod with the app.kubernetes.io/name: webapp label.\
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: 30001
