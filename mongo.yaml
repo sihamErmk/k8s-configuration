@@ -24,15 +24,12 @@ spec:
               valueFrom: 
                 secretKeyRef:
                   name: mongo-secret
-                  key: momgo-username
-
+                  key: mongo-username
             - name: MONGO_INITDB_ROOT_PASSWORD
               valueFrom: 
                 secretKeyRef:
                   name: mongo-secret
                   key: mongo-password        
-
-#service yaml config
 ---
 apiVersion: v1
 kind: Service
@@ -40,8 +37,7 @@ metadata:
   name: mongo-service
 spec:
   selector:
-    app: mongo 
-    #The Service targets TCP port 27017 on any Pod with the app.kubernetes.io/name: mongo label.\
+    app: mongo
   ports:
     - protocol: TCP
       port: 27017
